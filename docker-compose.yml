@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:14
+    container_name: tracking-analytics-db
+    environment:
+      POSTGRES_DB: ${DB_NAME:-tracking-analytics}
+      POSTGRES_USER: ${DB_USER:-dbadmin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dbpassword}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dbadmin} -d ${DB_NAME:-tracking-analytics}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: 
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: tracking-analytics-app
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-tracking-analytics}
+      DB_USER: ${DB_USER:-dbadmin}
+      DB_PASSWORD: ${DB_PASSWORD:-dbpassword}
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      bash -c "alembic upgrade head && 
+              python seed_data.py &&
+              uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+
+volumes:
+  postgres_data:
