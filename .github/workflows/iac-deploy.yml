@@ -80,6 +80,16 @@ jobs:
         ENV_LOWER=$(echo "${{ env.DEPLOY_ENV }}" | tr '[:upper:]' '[:lower:]')
         ECR_REPOSITORY="tracking-app-${ENV_LOWER}-repo"
         IMAGE_TAG=${{ github.sha }}
+
+        # Check if repository exists, create if it doesn't
+        if ! aws ecr describe-repositories --repository-names "${ECR_REPOSITORY}" 2>/dev/null; then
+          echo "Creating ECR repository: ${ECR_REPOSITORY}"
+          aws ecr create-repository \
+            --repository-name "${ECR_REPOSITORY}" \
+            --image-tag-mutability MUTABLE \
+            --image-scanning-configuration scanOnPush=true
+        fi
+        echo "ECR repository exists: ${ECR_REPOSITORY}"
         
         docker build -t ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG ${{ env.APP_DIR }}
         docker push ${{ steps.login-ecr.outputs.registry }}/$ECR_REPOSITORY:$IMAGE_TAG
