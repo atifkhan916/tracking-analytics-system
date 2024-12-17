@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:14
@@ -24,6 +22,7 @@ services:
       dockerfile: Dockerfile
     container_name: tracking-analytics-app
     environment:
+      PYTHONPATH: /app
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-tracking-analytics}
@@ -36,9 +35,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    working_dir: /app
     command: >
-      bash -c "alembic upgrade head && 
-              python seed_data.py &&
+      bash -c "cd alembic && alembic upgrade head && 
               uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
 
 volumes:
