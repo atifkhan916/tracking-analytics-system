@@ -42,9 +42,9 @@ def upgrade() -> None:
         conn.execute(
             sa.text("""
                 INSERT INTO tracking_events 
-                (user_id, event_name, timestamp, amount, referral, url, metadata, created_at)
+                (user_id, event_name, timestamp, amount, referral, url, event_metadata, created_at)
                 VALUES 
-                (:user_id, :event_name, :timestamp, :amount, :referral, :url, :metadata::json, :created_at)
+                (:user_id, :event_name, :timestamp, :amount, :referral, :url, :event_metadata, :created_at)
             """),
             {
                 "user_id": random.choice(user_ids),
@@ -53,7 +53,7 @@ def upgrade() -> None:
                 "amount": amount,
                 "referral": random.choice(referrals),
                 "url": random.choice(urls),
-                "metadata": metadata,
+                "event_metadata": metadata,
                 "created_at": datetime.now()
             }
         )
@@ -66,9 +66,9 @@ def upgrade() -> None:
         conn.execute(
             sa.text("""
                 INSERT INTO marketing_touchpoints 
-                (user_id, event_name, channel_name, timestamp, campaign_id, metadata, created_at)
+                (user_id, event_name, channel_name, timestamp, campaign_id, event_metadata, created_at)
                 VALUES 
-                (:user_id, :event_name, :channel_name, :timestamp, :campaign_id, :metadata::json, :created_at)
+                (:user_id, :event_name, :channel_name, :timestamp, :campaign_id, :event_metadata, :created_at)
             """),
             {
                 "user_id": random.choice(user_ids),
@@ -76,7 +76,7 @@ def upgrade() -> None:
                 "channel_name": random.choice(channels),
                 "timestamp": timestamp,
                 "campaign_id": random.choice(campaign_ids),
-                "metadata": metadata,
+                "event_metadata": metadata,
                 "created_at": datetime.now()
             }
         )

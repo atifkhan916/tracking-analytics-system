@@ -1,128 +1,102 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime, timedelta
+from datetime import datetime, timezone
 
-from . import models, schemas, database
-from .config import settings
+from app import models, schemas
+from app.database import get_db
+from app.config import settings
+from app.repositories.tracking import TrackingEventRepository
+from app.repositories.marketing import MarketingTouchpointRepository
+from app.services.tracking import TrackingEventService
+from app.services.marketing import MarketingTouchpointService
+from app.services.analytics import AnalyticsService
 
 app = FastAPI(title=settings.PROJECT_NAME)
 
 # Dependencies
-get_db = database.get_db
+def get_tracking_service(db: Session = Depends(get_db)) -> TrackingEventService:
+    repository = TrackingEventRepository(models.TrackingEvent, db)
+    return TrackingEventService(repository)
+
+def get_marketing_service(db: Session = Depends(get_db)) -> MarketingTouchpointService:
+    repository = MarketingTouchpointRepository(models.MarketingTouchpoint, db)
+    return MarketingTouchpointService(repository)
+
+def get_analytics_service(
+    tracking_service: TrackingEventService = Depends(get_tracking_service),
+    marketing_service: MarketingTouchpointService = Depends(get_marketing_service)
+) -> AnalyticsService:
+    return AnalyticsService(tracking_service, marketing_service)
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "timestamp": datetime.now(datetime.timezone.utc)}
+    return {"status": "healthy", "timestamp": datetime.now(timezone.utc)}
 
 @app.post("/tracking/events/", response_model=schemas.TrackingEvent)
-def create_tracking_event(event: schemas.TrackingEventCreate, db: Session = Depends(get_db)):
-    db_event = models.TrackingEvent(**event.dict())
-    db.add(db_event)
-    db.commit()
-    db.refresh(db_event)
-    return db_event
+def create_tracking_event(
+    event: schemas.TrackingEventCreate,
+    service: TrackingEventService = Depends(get_tracking_service)
+):
+    return service.create(obj_in=event)
 
 @app.get("/tracking/events/", response_model=List[schemas.TrackingEvent])
 def list_tracking_events(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 30,
     user_id: str = None,
     event_name: str = None,
     start_time: datetime = None,
     end_time: datetime = None,
-    db: Session = Depends(get_db)
+    service: TrackingEventService = Depends(get_tracking_service)
 ):
-    query = db.query(models.TrackingEvent)
-    
-    if user_id:
-        query = query.filter(models.TrackingEvent.user_id == user_id)
-    if event_name:
-        query = query.filter(models.TrackingEvent.event_name == event_name)
-    if start_time:
-        query = query.filter(models.TrackingEvent.timestamp >= start_time)
-    if end_time:
-        query = query.filter(models.TrackingEvent.timestamp <= end_time)
-    
-    return query.order_by(models.TrackingEvent.timestamp.desc()).offset(skip).limit(limit).all()
+    filters = {
+        "user_id": user_id,
+        "event_name": event_name,
+        "start_time": start_time,
+        "end_time": end_time
+    }
+    return service.get_multi(skip=skip, limit=limit, **filters)
 
 @app.post("/marketing/touchpoints/", response_model=schemas.MarketingTouchpoint)
-def create_marketing_touchpoint(touchpoint: schemas.MarketingTouchpointCreate, db: Session = Depends(get_db)):
-    db_touchpoint = models.MarketingTouchpoint(**touchpoint.dict())
-    db.add(db_touchpoint)
-    db.commit()
-    db.refresh(db_touchpoint)
-    return db_touchpoint
+def create_marketing_touchpoint(
+    touchpoint: schemas.MarketingTouchpointCreate,
+    service: MarketingTouchpointService = Depends(get_marketing_service)
+):
+    return service.create(obj_in=touchpoint)
 
 @app.get("/marketing/touchpoints/", response_model=List[schemas.MarketingTouchpoint])
 def list_marketing_touchpoints(
     skip: int = 0,
-    limit: int = 100,
+    limit: int = 30,
     user_id: str = None,
     channel_name: str = None,
     campaign_id: str = None,
     start_time: datetime = None,
     end_time: datetime = None,
-    db: Session = Depends(get_db)
+    service: MarketingTouchpointService = Depends(get_marketing_service)
 ):
-    query = db.query(models.MarketingTouchpoint)
-    
-    if user_id:
-        query = query.filter(models.MarketingTouchpoint.user_id == user_id)
-    if channel_name:
-        query = query.filter(models.MarketingTouchpoint.channel_name == channel_name)
-    if campaign_id:
-        query = query.filter(models.MarketingTouchpoint.campaign_id == campaign_id)
-    if start_time:
-        query = query.filter(models.MarketingTouchpoint.timestamp >= start_time)
-    if end_time:
-        query = query.filter(models.MarketingTouchpoint.timestamp <= end_time)
-    
-    return query.order_by(models.MarketingTouchpoint.timestamp.desc()).offset(skip).limit(limit).all()
+    filters = {
+        "user_id": user_id,
+        "channel_name": channel_name,
+        "campaign_id": campaign_id,
+        "start_time": start_time,
+        "end_time": end_time
+    }
+    return service.get_multi(skip=skip, limit=limit, **filters)
 
 @app.get("/analytics/user/{user_id}")
 def get_user_analytics(
     user_id: str,
     start_time: datetime = None,
     end_time: datetime = None,
-    db: Session = Depends(get_db)
+    service: AnalyticsService = Depends(get_analytics_service)
 ):
-    if not start_time:
-        start_time = datetime.utcnow() - timedelta(days=30)
-    if not end_time:
-        end_time = datetime.utcnow()
-
-    # Get tracking events
-    events = db.query(models.TrackingEvent)\
-        .filter(
-            models.TrackingEvent.user_id == user_id,
-            models.TrackingEvent.timestamp.between(start_time, end_time)
-        )\
-        .all()
-
-    # Get marketing touchpoints
-    touchpoints = db.query(models.MarketingTouchpoint)\
-        .filter(
-            models.MarketingTouchpoint.user_id == user_id,
-            models.MarketingTouchpoint.timestamp.between(start_time, end_time)
-        )\
-        .all()
-
-    return {
-        "user_id": user_id,
-        "period": {
-            "start": start_time,
-            "end": end_time
-        },
-        "events": {
-            "total_count": len(events),
-            "events": events
-        },
-        "marketing": {
-            "total_touchpoints": len(touchpoints),
-            "touchpoints": touchpoints
-        }
-    }
+    return service.get_user_analytics(
+        user_id=user_id,
+        start_time=start_time,
+        end_time=end_time
+    )
 
 if __name__ == "__main__":
     import uvicorn

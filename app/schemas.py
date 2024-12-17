@@ -8,7 +8,7 @@ class TrackingEventBase(BaseModel):
     amount: Optional[float] = None
     referral: Optional[str] = None
     url: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    event_metadata: Optional[Dict[str, Any]] = None
 
 class TrackingEventCreate(TrackingEventBase):
     pass
@@ -26,7 +26,7 @@ class MarketingTouchpointBase(BaseModel):
     event_name: str
     channel_name: str
     campaign_id: Optional[str] = None
-    metadata: Optional[Dict[str, Any]] = None
+    event_metadata: Optional[Dict[str, Any]] = None
 
 class MarketingTouchpointCreate(MarketingTouchpointBase):
     pass

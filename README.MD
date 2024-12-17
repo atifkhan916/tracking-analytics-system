@@ -91,5 +91,15 @@ Exposed ports for local access
 Development:
 
 Environment variables
+
+
 Code hot reloading
 Easy database access
+
+CI/CD pipeline
+----------------
+AWS_ACCESS_KEY_ID
+AWS_SECRET_ACCESS_KEY
+DB_NAME_DEV
+DB_PASSWORD_DEV
+DB_USER_DEV

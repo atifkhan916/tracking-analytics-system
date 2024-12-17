@@ -18,7 +18,7 @@ def upgrade() -> None:
         sa.Column('amount', sa.Float(), nullable=True),
         sa.Column('referral', sa.String(), nullable=True),
         sa.Column('url', sa.Text(), nullable=True),
-        sa.Column('metadata', postgresql.JSON(astext_type=sa.Text()), nullable=True),
+        sa.Column('event_metadata', postgresql.JSON(astext_type=sa.Text()), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint('id')
     )
@@ -34,7 +34,7 @@ def upgrade() -> None:
         sa.Column('channel_name', sa.String(), nullable=False),
         sa.Column('timestamp', sa.DateTime(), nullable=False),
         sa.Column('campaign_id', sa.String(), nullable=True),
-        sa.Column('metadata', postgresql.JSON(astext_type=sa.Text()), nullable=True),
+        sa.Column('event_metadata', postgresql.JSON(astext_type=sa.Text()), nullable=True),
         sa.Column('created_at', sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint('id')
     )
