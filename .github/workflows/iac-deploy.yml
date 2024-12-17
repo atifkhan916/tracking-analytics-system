@@ -63,15 +63,16 @@ jobs:
 
     - name: Configure AWS credentials
       if: env.DEPLOY_ENV == 'DEV' || env.DEPLOY_ENV == 'PROD'
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: ${{ secrets[format('AWS_ROLE_ARN_{0}', env.DEPLOY_ENV)] }}
+        aws-access-key-id: ${{ secrets[format('GBFS_{0}_AWS_ACCESS_KEY_ID', env.DEPLOY_ENV)] }}
+        aws-secret-access-key: ${{ secrets[format('GBFS_{0}_AWS_SECRET_KEY', env.DEPLOY_ENV)] }}
         aws-region: ${{ env.AWS_REGION }}
 
     - name: Login to Amazon ECR
       if: env.DEPLOY_ENV == 'DEV' || env.DEPLOY_ENV == 'PROD'
+      uses: aws-actions/amazon-ecr-login@v2
       id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
 
     - name: Build and push Docker image
       if: env.DEPLOY_ENV == 'DEV' || env.DEPLOY_ENV == 'PROD'
