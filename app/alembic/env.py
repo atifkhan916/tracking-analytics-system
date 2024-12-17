@@ -1,9 +1,24 @@
+import os
+import sys
 from logging.config import fileConfig
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from alembic import context
-from app.models import Base
-from app.config import settings
+
+# Get the absolute path of the directory containing env.py
+current_path = os.path.dirname(os.path.abspath(__file__))
+# Get the root path (app directory)
+root_path = os.path.dirname(current_path)
+
+# Add root path to Python path
+if root_path not in sys.path:
+    sys.path.insert(0, root_path)
+
+from models import Base
+from config import settings
+
+#from app.models import Base
+#from app.config import settings
 
 config = context.config
 

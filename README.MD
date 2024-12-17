@@ -31,3 +31,65 @@ API Endpoints:
 /tracking/events/: Create and list tracking events
 /marketing/touchpoints/: Create and list marketing touchpoints
 /analytics/user/{user_id}: Get user analytics
+
+
+local setup
+
+# .env
+DB_NAME=tracking-analytics
+DB_USER=dbadmin
+DB_PASSWORD=dbpassword
+
+Start the services:
+docker-compose up -d
+
+View logs:
+# All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f app
+
+
+# Access the services:
+FastAPI app: http://localhost:8000
+Database: localhost:5432
+
+
+# Stop the services:
+docker-compose down
+
+# Clean up everything including volumes:
+docker-compose down -v
+
+
+Features:
+
+Database:
+
+PostgreSQL 14
+Persistent storage
+Health checks
+Environment variable configuration
+
+
+Application:
+
+Hot reload for development
+Automatic migrations
+Seed data population
+Volume mounted code for live changes
+
+
+Network:
+
+Automatic network creation
+Service discovery (db hostname)
+Exposed ports for local access
+
+
+Development:
+
+Environment variables
+Code hot reloading
+Easy database access
