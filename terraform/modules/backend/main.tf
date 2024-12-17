@@ -1,10 +1,10 @@
 # ECR Repository
 resource "aws_ecr_repository" "app" {
-  name         = "${var.project}-${var.environment}-app"
+  name         = "${var.project}-${var.environment}-repo"
   force_delete = true
 
   tags = {
-    Name        = "${var.project}-${var.environment}-app"
+    Name        = "${var.project}-${var.environment}-repo"
     Environment = var.environment
     Project     = var.project
   }
