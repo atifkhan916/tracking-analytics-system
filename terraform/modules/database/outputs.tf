@@ -1,7 +1,3 @@
-output "db_security_group_id" {
-  description = "Security Group ID of the database"
-  value       = aws_security_group.db.id
-}
 
 output "db_host" {
   description = "Database host address"

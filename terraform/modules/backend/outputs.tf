@@ -22,8 +22,3 @@ output "service_url" {
   description = "Service Discovery URL for the application"
   value       = aws_service_discovery_service.app.name
 }
-
-output "db_security_group_id" {
-  description = "Security Group ID of the database"
-  value       = aws_security_group.db.id
-}

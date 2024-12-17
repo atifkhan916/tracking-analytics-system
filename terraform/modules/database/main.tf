@@ -35,7 +35,7 @@ resource "aws_security_group" "efs" {
     from_port       = 2049
     to_port         = 2049
     protocol        = "tcp"
-    security_groups = [aws_security_group.db.id]
+    security_groups = [db_security_group_id]
   }
 
   egress {

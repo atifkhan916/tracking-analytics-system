@@ -14,25 +14,14 @@ output "public_subnet_ids" {
   value       = module.networking.public_subnet_ids
 }
 
-# ECS outputs
-output "ecs_cluster_name" {
-  description = "Name of the ECS cluster"
-  value       = module.ecs.ecs_cluster_name
-}
-
 output "alb_dns_name" {
   description = "DNS name of the Application Load Balancer"
-  value       = module.ecs.alb_dns_name
-}
-
-output "ecr_repository_app_url" {
-  description = "URL of the ECR repository for the application"
-  value       = module.ecs.ecr_repository_app_url
+  value       = module.backend.alb_dns_name
 }
 
 output "ecr_repository_db_url" {
   description = "URL of the ECR repository for the database"
-  value       = module.ecs.ecr_repository_db_url
+  value       = module.database.ecr_repository_url
 }
 
 # Database outputs
@@ -43,5 +32,5 @@ output "db_host" {
 
 output "efs_file_system_id" {
   description = "ID of the EFS file system"
-  value       = module.database.efs_file_system_id
+  value       = module.database.efs_id
 }

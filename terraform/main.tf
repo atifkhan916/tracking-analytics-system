@@ -31,7 +31,7 @@ module "database" {
   ecs_execution_role_arn = module.ecs.execution_role_arn
   ecs_task_role_arn     = module.ecs.task_role_arn
   service_discovery_namespace_id = module.ecs.service_discovery_namespace_id
-  db_security_group_id  =  module.ecs.db_security_group_id
+  db_security_group_id  =  module.networking.db_security_group_id
   db_name            = var.db_name
   db_user            = var.db_user
   db_password        = var.db_password
