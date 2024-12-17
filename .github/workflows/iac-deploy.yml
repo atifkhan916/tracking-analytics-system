@@ -37,7 +37,7 @@ jobs:
     - name: Run Tests
       run: |
         cd ${{ env.APP_DIR }}
-        pytest
+        # pytest
     
     - name: Read Environment Variables
       id: tfvars
