@@ -58,5 +58,4 @@ module "backend" {
   db_name            = var.db_name
   db_user            = var.db_user
   db_password        = var.db_password
-  db_password_secret_arn  = module.database.db_secret_arn
 }

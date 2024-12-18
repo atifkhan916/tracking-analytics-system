@@ -77,24 +77,6 @@ resource "aws_service_discovery_service" "db" {
   }
 }
 
-# DB Secrets
-resource "aws_secretsmanager_secret" "db_password" {
-  name = "${var.project}-${var.environment}-db-password"
-  
-  tags = {
-    Name        = "${var.project}-${var.environment}-db-password"
-    Environment = var.environment
-    Project     = var.project
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "db_password" {
-  secret_id     = aws_secretsmanager_secret.db_password.id
-  secret_string = jsonencode({
-    username = var.db_user
-    password = var.db_password
-  })
-}
 
 # ECS Task Definition for Database
 resource "aws_ecs_task_definition" "db" {
@@ -134,7 +116,7 @@ resource "aws_ecs_task_definition" "db" {
       secrets = [
         {
           name      = "POSTGRES_PASSWORD"
-          valueFrom = aws_secretsmanager_secret.db_password.arn
+          value = var.db_password
         }
       ]
 
