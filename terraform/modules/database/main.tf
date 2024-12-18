@@ -110,15 +110,13 @@ resource "aws_ecs_task_definition" "db" {
         {
           name  = "POSTGRES_USER"
           value = var.db_user
-        }
-      ]
-      
-      secrets = [
+        },
         {
           name      = "POSTGRES_PASSWORD"
           value = var.db_password
         }
       ]
+      
 
       mountPoints = [
         {
