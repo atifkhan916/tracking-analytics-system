@@ -142,7 +142,7 @@ resource "aws_ecs_task_definition" "app" {
       environment = [
         {
           name  = "DB_HOST"
-          value = var.db_host
+          value = "${var.db_host}.${var.project}-${var.environment}.local"
         },
         {
           name  = "DB_NAME"
@@ -154,7 +154,7 @@ resource "aws_ecs_task_definition" "app" {
         },
         {
           name      = "DB_PASSWORD"
-          valueFrom = var.db_password
+          value = var.db_password
         },
         {
           name  = "REGION"
