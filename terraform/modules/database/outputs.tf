@@ -4,11 +4,6 @@ output "db_host" {
   value       = aws_service_discovery_service.db.name
 }
 
-output "db_secret_arn" {
-  description = "ARN of the database secret"
-  value       = aws_secretsmanager_secret.db_password.arn
-}
-
 output "efs_id" {
   description = "ID of the EFS file system"
   value       = aws_efs_file_system.postgres_data.id

@@ -3,27 +3,6 @@ data "aws_ecr_repository" "app" {
   name = "tracking-app-${var.environment}-repo"  # Match the name from GitHub Actions
 }
 
-# Policy for accessing Secrets Manager
-resource "aws_iam_role_policy" "task_secrets_policy" {
-  name = "${var.project}-${var.environment}-app-secrets-policy"
-  role = var.ecs_task_role_name
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue",
-          "kms:Decrypt"
-        ]
-        Resource = [
-          var.db_password_secret_arn
-        ]
-      }
-    ]
-  })
-}
 
 resource "aws_iam_role_policy" "task_logs_policy" {
   name = "${var.project}-${var.environment}-app-logs-policy"
@@ -67,15 +46,6 @@ resource "aws_iam_role_policy" "execution_policy" {
           "logs:PutLogEvents"
         ]
         Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = [
-          var.db_password_secret_arn
-        ]
       }
     ]
   })
@@ -183,8 +153,8 @@ resource "aws_ecs_task_definition" "app" {
           value = var.db_user
         },
         {
-          name      = "DB_PASSWORD_ARN"
-          valueFrom = var.db_password_secret_arn
+          name      = "DB_PASSWORD"
+          valueFrom = var.db_password
         },
         {
           name  = "REGION"
