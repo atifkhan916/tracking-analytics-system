@@ -1,19 +1,12 @@
 # ECR Repository
-resource "aws_ecr_repository" "app" {
-  name         = "${var.project}-${var.environment}-repo"
-  force_delete = true
-
-  tags = {
-    Name        = "${var.project}-${var.environment}-repo"
-    Environment = var.environment
-    Project     = var.project
-  }
+data "aws_ecr_repository" "app" {
+  name = "tracking-app-${var.environment}-repo"  # Match the name from GitHub Actions
 }
 
 # Policy for accessing Secrets Manager
 resource "aws_iam_role_policy" "task_secrets_policy" {
   name = "${var.project}-${var.environment}-app-secrets-policy"
-  role = var.ecs_task_role_arn
+  role = var.ecs_task_role_name
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -34,7 +27,7 @@ resource "aws_iam_role_policy" "task_secrets_policy" {
 
 resource "aws_iam_role_policy" "task_logs_policy" {
   name = "${var.project}-${var.environment}-app-logs-policy"
-  role = var.ecs_task_role_arn
+  role = var.ecs_task_role_name
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -58,7 +51,7 @@ resource "aws_iam_role_policy" "task_logs_policy" {
 
 resource "aws_iam_role_policy" "execution_policy" {
   name = "${var.project}-${var.environment}-app-execution-policy"
-  role = var.ecs_execution_role_arn
+  role = var.ecs_execution_role_name
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -218,7 +211,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image     = "${aws_ecr_repository.app.repository_url}:latest"
+      image     = "${data.aws_ecr_repository.app.repository_url}:latest"
       essential = true
       
       portMappings = [

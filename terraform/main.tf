@@ -48,6 +48,8 @@ module "backend" {
   ecs_cluster_id     = module.ecs.cluster_id
   ecs_execution_role_arn = module.ecs.execution_role_arn
   ecs_task_role_arn     = module.ecs.task_role_arn
+  ecs_execution_role_name = module.ecs.execution_role_name
+  ecs_task_role_name = module.ecs.task_role_name
   service_discovery_namespace_id = module.ecs.service_discovery_namespace_id
   app_security_group_id = module.networking.app_security_group_id
   alb_security_group_id = module.networking.alb_security_group_id

@@ -38,6 +38,16 @@ variable "ecs_task_role_arn" {
   type        = string
 }
 
+variable "ecs_execution_role_name" {
+  description = "ECS Execution Role name"
+  type        = string
+}
+
+variable "ecs_task_role_name" {
+  description = "ECS Task Role name"
+  type        = string
+}
+
 variable "service_discovery_namespace_id" {
   description = "Service Discovery Namespace ID"
   type        = string
