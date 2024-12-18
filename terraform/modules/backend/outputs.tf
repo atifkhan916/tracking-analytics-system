@@ -1,8 +1,3 @@
-output "app_security_group_id" {
-  description = "Security Group ID of the application"
-  value       = aws_security_group.app.id
-}
-
 output "alb_dns_name" {
   description = "DNS name of the Application Load Balancer"
   value       = aws_lb.main.dns_name
@@ -10,11 +5,6 @@ output "alb_dns_name" {
 
 output "ecr_repository_app_url" {
   value = data.aws_ecr_repository.app.repository_url
-}
-
-output "app_secret_arn" {
-  description = "ARN of the application secret"
-  value       = aws_secretsmanager_secret.db_password.arn
 }
 
 output "service_url" {
