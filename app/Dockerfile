@@ -15,7 +15,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-ENV PYTHONPATH=/app
+ENV PYTHONPATH=/
 
 # Run migrations and start the application
-CMD ["sh", "-c", "cd alembic && alembic upgrade head && cd .. && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "cd alembic && alembic upgrade head && cd ../ &&
+              uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
