@@ -18,7 +18,7 @@ resource "aws_iam_role_policy" "task_secrets_policy" {
           "kms:Decrypt"
         ]
         Resource = [
-          aws_secretsmanager_secret.db_password.arn
+          var.db_password_secret_arn
         ]
       }
     ]
@@ -74,7 +74,7 @@ resource "aws_iam_role_policy" "execution_policy" {
           "secretsmanager:GetSecretValue"
         ]
         Resource = [
-          aws_secretsmanager_secret.db_password.arn
+          var.db_password_secret_arn
         ]
       }
     ]
@@ -181,15 +181,17 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "DB_USER"
           value = var.db_user
+        },
+        {
+          name      = "DB_PASSWORD_ARN"
+          valueFrom = var.db_password_secret_arn
+        },
+        {
+          name  = "REGION"
+          value = var.aws_region
         }
       ]
       
-      secrets = [
-        {
-          name      = "DB_PASSWORD"
-          valueFrom = aws_secretsmanager_secret.db_password.arn
-        }
-      ]
 
       logConfiguration = {
         logDriver = "awslogs"

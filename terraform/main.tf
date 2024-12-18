@@ -42,6 +42,7 @@ module "backend" {
   
   project            = var.project
   environment        = var.environment
+  aws_region             = var.aws_region
   vpc_id             = module.networking.vpc_id
   private_subnet_ids = module.networking.private_subnet_ids
   public_subnet_ids  = module.networking.public_subnet_ids
@@ -57,4 +58,5 @@ module "backend" {
   db_name            = var.db_name
   db_user            = var.db_user
   db_password        = var.db_password
+  db_password_secret_arn  = module.database.db_secret_arn
 }
