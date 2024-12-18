@@ -1,40 +1,12 @@
 # ECR Repository
-resource "aws_ecr_repository" "app" {
-  name         = "${var.project}-${var.environment}-app"
-  force_delete = true
-
-  tags = {
-    Name        = "${var.project}-${var.environment}-app"
-    Environment = var.environment
-    Project     = var.project
-  }
+data "aws_ecr_repository" "app" {
+  name = "tracking-app-${var.environment}-repo"  # Match the name from GitHub Actions
 }
 
-# Policy for accessing Secrets Manager
-resource "aws_iam_role_policy" "task_secrets_policy" {
-  name = "${var.project}-${var.environment}-app-secrets-policy"
-  role = var.ecs_task_role_arn
-
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue",
-          "kms:Decrypt"
-        ]
-        Resource = [
-          aws_secretsmanager_secret.db_password.arn
-        ]
-      }
-    ]
-  })
-}
 
 resource "aws_iam_role_policy" "task_logs_policy" {
   name = "${var.project}-${var.environment}-app-logs-policy"
-  role = var.ecs_task_role_arn
+  role = var.ecs_task_role_name
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -58,7 +30,7 @@ resource "aws_iam_role_policy" "task_logs_policy" {
 
 resource "aws_iam_role_policy" "execution_policy" {
   name = "${var.project}-${var.environment}-app-execution-policy"
-  role = var.ecs_execution_role_arn
+  role = var.ecs_execution_role_name
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -74,15 +46,6 @@ resource "aws_iam_role_policy" "execution_policy" {
           "logs:PutLogEvents"
         ]
         Resource = "*"
-      },
-      {
-        Effect = "Allow"
-        Action = [
-          "secretsmanager:GetSecretValue"
-        ]
-        Resource = [
-          aws_secretsmanager_secret.db_password.arn
-        ]
       }
     ]
   })
@@ -103,91 +66,12 @@ resource "aws_cloudwatch_log_group" "app" {
   }
 }
 
-# Security Groups
-resource "aws_security_group" "alb" {
-  name        = "${var.project}-${var.environment}-alb-sg"
-  description = "Security group for ALB"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "${var.project}-${var.environment}-alb-sg"
-    Environment = var.environment
-    Project     = var.project
-  }
-}
-
-resource "aws_security_group" "app" {
-  name        = "${var.project}-${var.environment}-app-sg"
-  description = "Security group for the application"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port       = 8000
-    to_port         = 8000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "${var.project}-${var.environment}-app-sg"
-    Environment = var.environment
-    Project     = var.project
-  }
-}
-
-resource "aws_security_group" "db" {
-  name        = "${var.project}-${var.environment}-db-sg"
-  description = "Security group for PostgreSQL database"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port       = 5432
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [aws_security_group.app.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "${var.project}-${var.environment}-db-sg"
-    Environment = var.environment
-    Project     = var.project
-  }
-}
-
 # ALB
 resource "aws_lb" "main" {
   name               = "${var.project}-${var.environment}-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
+  security_groups    = [var.alb_security_group_id]
   subnets           = var.public_subnet_ids
 
   tags = {
@@ -244,7 +128,7 @@ resource "aws_ecs_task_definition" "app" {
   container_definitions = jsonencode([
     {
       name      = "app"
-      image     = "${aws_ecr_repository.app.repository_url}:latest"
+      image     = "${data.aws_ecr_repository.app.repository_url}:latest"
       essential = true
       
       portMappings = [
@@ -258,7 +142,7 @@ resource "aws_ecs_task_definition" "app" {
       environment = [
         {
           name  = "DB_HOST"
-          value = var.db_host
+          value = "${var.db_host}.${var.project}-${var.environment}.local"
         },
         {
           name  = "DB_NAME"
@@ -267,15 +151,17 @@ resource "aws_ecs_task_definition" "app" {
         {
           name  = "DB_USER"
           value = var.db_user
+        },
+        {
+          name      = "DB_PASSWORD"
+          value = var.db_password
+        },
+        {
+          name  = "REGION"
+          value = var.aws_region
         }
       ]
       
-      secrets = [
-        {
-          name      = "DB_PASSWORD"
-          valueFrom = aws_secretsmanager_secret.db_password.arn
-        }
-      ]
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -300,12 +186,12 @@ resource "aws_ecs_service" "app" {
   name            = "${var.project}-${var.environment}-app"
   cluster         = var.ecs_cluster_id
   task_definition = aws_ecs_task_definition.app.arn
-  desired_count   = 2
+  desired_count   = 1
   launch_type     = "FARGATE"
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [aws_security_group.app.id]
+    security_groups  = [var.app_security_group_id]
     assign_public_ip = false
   }
 
@@ -342,23 +228,4 @@ resource "aws_service_discovery_service" "app" {
   health_check_custom_config {
     failure_threshold = 1
   }
-}
-
-# Secrets Manager for DB Password
-resource "aws_secretsmanager_secret" "db_password" {
-  name = "${var.project}-${var.environment}-app-db-password"
-  
-  tags = {
-    Name        = "${var.project}-${var.environment}-app-db-password"
-    Environment = var.environment
-    Project     = var.project
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "db_password" {
-  secret_id     = aws_secretsmanager_secret.db_password.id
-  secret_string = jsonencode({
-    username = var.db_user
-    password = var.db_password
-  })
 }

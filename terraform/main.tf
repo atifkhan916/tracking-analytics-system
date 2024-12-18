@@ -31,7 +31,7 @@ module "database" {
   ecs_execution_role_arn = module.ecs.execution_role_arn
   ecs_task_role_arn     = module.ecs.task_role_arn
   service_discovery_namespace_id = module.ecs.service_discovery_namespace_id
-  db_security_group_id  =  module.ecs.db_security_group_id
+  db_security_group_id  =  module.networking.db_security_group_id
   db_name            = var.db_name
   db_user            = var.db_user
   db_password        = var.db_password
@@ -42,12 +42,15 @@ module "backend" {
   
   project            = var.project
   environment        = var.environment
+  aws_region             = var.aws_region
   vpc_id             = module.networking.vpc_id
   private_subnet_ids = module.networking.private_subnet_ids
   public_subnet_ids  = module.networking.public_subnet_ids
   ecs_cluster_id     = module.ecs.cluster_id
   ecs_execution_role_arn = module.ecs.execution_role_arn
   ecs_task_role_arn     = module.ecs.task_role_arn
+  ecs_execution_role_name = module.ecs.execution_role_name
+  ecs_task_role_name = module.ecs.task_role_name
   service_discovery_namespace_id = module.ecs.service_discovery_namespace_id
   app_security_group_id = module.networking.app_security_group_id
   alb_security_group_id = module.networking.alb_security_group_id

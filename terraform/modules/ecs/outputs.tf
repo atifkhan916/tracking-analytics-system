@@ -13,6 +13,11 @@ output "execution_role_arn" {
   value       = aws_iam_role.execution_role.arn
 }
 
+output "execution_role_name" {
+  description = "ECS Execution Role name"
+  value       = aws_iam_role.execution_role.name
+}
+
 output "execution_role_id" {
   description = "ECS Execution Role ID"
   value       = aws_iam_role.execution_role.id
@@ -21,6 +26,11 @@ output "execution_role_id" {
 output "task_role_arn" {
   description = "ECS Task Role ARN"
   value       = aws_iam_role.task_role.arn
+}
+
+output "task_role_name" {
+  description = "ECS Task Role Name"
+  value       = aws_iam_role.task_role.name
 }
 
 output "task_role_id" {

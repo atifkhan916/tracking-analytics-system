@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, JSON, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
-from datetime import datetime
+from datetime import datetime, timezone
 
 Base = declarative_base()
 
@@ -10,12 +10,12 @@ class TrackingEvent(Base):
     id = Column(Integer, primary_key=True)
     user_id = Column(String, nullable=False, index=True)
     event_name = Column(String, nullable=False, index=True)
-    timestamp = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    timestamp = Column(DateTime, nullable=False, default=datetime.now(timezone.utc), index=True)
     amount = Column(Float)
     referral = Column(String)
     url = Column(Text)
-    metadata = Column(JSON)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    event_metadata = Column(JSON)  # Changed from metadata to event_metadata
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))
 
 class MarketingTouchpoint(Base):
     __tablename__ = "marketing_touchpoints"
@@ -24,7 +24,7 @@ class MarketingTouchpoint(Base):
     user_id = Column(String, nullable=False, index=True)
     event_name = Column(String, nullable=False, index=True)
     channel_name = Column(String, nullable=False, index=True)
-    timestamp = Column(DateTime, nullable=False, default=datetime.utcnow, index=True)
+    timestamp = Column(DateTime, nullable=False, default=datetime.now(timezone.utc), index=True)
     campaign_id = Column(String, index=True)
-    metadata = Column(JSON)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    event_metadata = Column(JSON)  # Changed from metadata to event_metadata
+    created_at = Column(DateTime, default=datetime.now(timezone.utc))

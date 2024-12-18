@@ -35,7 +35,7 @@ resource "aws_security_group" "efs" {
     from_port       = 2049
     to_port         = 2049
     protocol        = "tcp"
-    security_groups = [aws_security_group.db.id]
+    security_groups = [var.db_security_group_id]
   }
 
   egress {
@@ -77,24 +77,6 @@ resource "aws_service_discovery_service" "db" {
   }
 }
 
-# DB Secrets
-resource "aws_secretsmanager_secret" "db_password" {
-  name = "${var.project}-${var.environment}-db-password"
-  
-  tags = {
-    Name        = "${var.project}-${var.environment}-db-password"
-    Environment = var.environment
-    Project     = var.project
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "db_password" {
-  secret_id     = aws_secretsmanager_secret.db_password.id
-  secret_string = jsonencode({
-    username = var.db_user
-    password = var.db_password
-  })
-}
 
 # ECS Task Definition for Database
 resource "aws_ecs_task_definition" "db" {
@@ -128,15 +110,13 @@ resource "aws_ecs_task_definition" "db" {
         {
           name  = "POSTGRES_USER"
           value = var.db_user
+        },
+        {
+          name      = "POSTGRES_PASSWORD"
+          value = var.db_password
         }
       ]
       
-      secrets = [
-        {
-          name      = "POSTGRES_PASSWORD"
-          valueFrom = aws_secretsmanager_secret.db_password.arn
-        }
-      ]
 
       mountPoints = [
         {
