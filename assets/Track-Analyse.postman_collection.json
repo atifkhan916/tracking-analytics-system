@@ -1,0 +1,148 @@
+{
+	"info": {
+		"_postman_id": "f45595e7-70b9-4c82-9e8d-60f452fc1add",
+		"name": "Track-Analyse",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40528158"
+	},
+	"item": [
+		{
+			"name": "Get-Tracking-Events",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://tracking-app-dev-alb-1146298026.us-west-2.elb.amazonaws.com/tracking/events/",
+					"protocol": "http",
+					"host": [
+						"tracking-app-dev-alb-1146298026",
+						"us-west-2",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"tracking",
+						"events",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get-Marketing-Touchpoints",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://tracking-app-dev-alb-1146298026.us-west-2.elb.amazonaws.com/marketing/touchpoints/",
+					"protocol": "http",
+					"host": [
+						"tracking-app-dev-alb-1146298026",
+						"us-west-2",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"marketing",
+						"touchpoints",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add-Marketing-Events",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user_id\": \"Sam123\",\r\n    \"event_name\": \"banner\",\r\n    \"channel_name\": \"twitter\",\r\n    \"campaign_id\": \"Christmas\",\r\n    \"event_metadata\": {\r\n        \"session_id\": \"sess_0\",\r\n        \"device\": \"laptop\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://tracking-app-dev-alb-1146298026.us-west-2.elb.amazonaws.com/marketing/touchpoints/",
+					"protocol": "http",
+					"host": [
+						"tracking-app-dev-alb-1146298026",
+						"us-west-2",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"marketing",
+						"touchpoints",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add-Tracking-Events",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"user_id\": \"Sam\",\r\n    \"event_name\": \"add_to_cart\",\r\n    \"amount\": 123.50,\r\n    \"referral\": \"twitter\",\r\n    \"url\": \"/cart\",\r\n    \"event_metadata\": {\r\n        \"session_id\": \"sess_0\",\r\n        \"device\": \"laptop\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://tracking-app-dev-alb-1146298026.us-west-2.elb.amazonaws.com/tracking/events/",
+					"protocol": "http",
+					"host": [
+						"tracking-app-dev-alb-1146298026",
+						"us-west-2",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"tracking",
+						"events",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get-User-Analytics",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://tracking-app-dev-alb-1146298026.us-west-2.elb.amazonaws.com/analytics/user/sam123",
+					"protocol": "http",
+					"host": [
+						"tracking-app-dev-alb-1146298026",
+						"us-west-2",
+						"elb",
+						"amazonaws",
+						"com"
+					],
+					"path": [
+						"analytics",
+						"user",
+						"sam123"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
