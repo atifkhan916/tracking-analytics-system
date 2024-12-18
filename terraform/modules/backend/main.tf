@@ -96,65 +96,12 @@ resource "aws_cloudwatch_log_group" "app" {
   }
 }
 
-# Security Groups
-resource "aws_security_group" "alb" {
-  name        = "${var.project}-${var.environment}-alb-sg"
-  description = "Security group for ALB"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "${var.project}-${var.environment}-alb-sg"
-    Environment = var.environment
-    Project     = var.project
-  }
-}
-
-resource "aws_security_group" "app" {
-  name        = "${var.project}-${var.environment}-app-sg"
-  description = "Security group for the application"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port       = 8000
-    to_port         = 8000
-    protocol        = "tcp"
-    security_groups = [aws_security_group.alb.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name        = "${var.project}-${var.environment}-app-sg"
-    Environment = var.environment
-    Project     = var.project
-  }
-}
-
 # ALB
 resource "aws_lb" "main" {
   name               = "${var.project}-${var.environment}-alb"
   internal           = false
   load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb.id]
+  security_groups    = [var.alb_security_group_id]
   subnets           = var.public_subnet_ids
 
   tags = {
@@ -272,7 +219,7 @@ resource "aws_ecs_service" "app" {
 
   network_configuration {
     subnets          = var.private_subnet_ids
-    security_groups  = [aws_security_group.app.id]
+    security_groups  = [var.app_security_group_id]
     assign_public_ip = false
   }
 
@@ -309,23 +256,4 @@ resource "aws_service_discovery_service" "app" {
   health_check_custom_config {
     failure_threshold = 1
   }
-}
-
-# Secrets Manager for DB Password
-resource "aws_secretsmanager_secret" "db_password" {
-  name = "${var.project}-${var.environment}-app-db-password"
-  
-  tags = {
-    Name        = "${var.project}-${var.environment}-app-db-password"
-    Environment = var.environment
-    Project     = var.project
-  }
-}
-
-resource "aws_secretsmanager_secret_version" "db_password" {
-  secret_id     = aws_secretsmanager_secret.db_password.id
-  secret_string = jsonencode({
-    username = var.db_user
-    password = var.db_password
-  })
 }
