@@ -1,7 +1,7 @@
 
 output "db_host" {
   description = "Database host address"
-  value       = aws_service_discovery_service.db.name
+  value       = aws_service_discovery_service.db.
 }
 
 output "efs_id" {
